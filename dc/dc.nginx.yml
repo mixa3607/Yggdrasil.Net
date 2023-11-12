@@ -1,0 +1,11 @@
+services:
+  yggdrasil:
+    environment:
+      - VIRTUAL_HOST=$YGGDRASIL_HOST
+      - VIRTUAL_PORT=80
+    networks:
+      - nginx
+networks:
+  nginx:
+    name: nginx
+    external: true

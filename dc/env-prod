@@ -1,0 +1,12 @@
+#docker-compose
+COMPOSE_FILE=./dc/dc.yml:./dc/dc.nginx.yml
+
+#service specified
+
+YGGDRASIL_HOST=yggdrasil.xyz
+
+ASPNETCORE_ENVIRONMENT=Production
+
+REGISTRY=ghcr.io
+IMAGE_NAME=mixa3607/Yggdrasil.Net/yggdrasil
+IMAGE_TAG=master

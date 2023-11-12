@@ -1,0 +1,10 @@
+services:
+  yggdrasil:
+    image: ${REGISTRY-local}/${IMAGE_NAME-yggdrasil}:${IMAGE_TAG-latest}
+    build:
+      context: ../
+      network: host
+      target: app
+      args:
+        - COMMIT_REF_NAME=${CI_COMMIT_REF_NAME-local}
+        - COMMIT_SHA=${CI_COMMIT_SHA-deadbeef}

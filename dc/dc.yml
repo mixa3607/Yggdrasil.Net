@@ -1,0 +1,15 @@
+services:
+  yggdrasil:
+    image: ${REGISTRY-local}/${IMAGE_NAME-yggdrasil}:${IMAGE_TAG-latest}
+    environment:
+      - ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
+    volumes:
+      - ./data/certs:/app/files/certs:ro
+      - ./data/appsettings.json:/app/appsettings.json:ro
+      - ./data/appsettings.$ASPNETCORE_ENVIRONMENT.json:/app/appsettings.$ASPNETCORE_ENVIRONMENT.json:ro
+    expose: [80]
+    networks:
+      - default
+    restart: unless-stopped
+networks:
+  default:
