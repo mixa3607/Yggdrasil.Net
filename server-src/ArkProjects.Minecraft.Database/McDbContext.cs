@@ -1,4 +1,5 @@
-﻿using ArkProjects.Minecraft.Database.Entities.Users;
+﻿using ArkProjects.Minecraft.Database.Entities;
+using ArkProjects.Minecraft.Database.Entities.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace ArkProjects.Minecraft.Database;

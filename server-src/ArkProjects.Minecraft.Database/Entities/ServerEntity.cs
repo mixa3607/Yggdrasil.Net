@@ -1,4 +1,4 @@
-﻿namespace ArkProjects.Minecraft.Database;
+﻿namespace ArkProjects.Minecraft.Database.Entities;
 
 public class ServerEntity
 {

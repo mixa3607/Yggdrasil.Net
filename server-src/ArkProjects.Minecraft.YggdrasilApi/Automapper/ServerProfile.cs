@@ -1,5 +1,5 @@
 ﻿using System.Security.Cryptography.X509Certificates;
-using ArkProjects.Minecraft.Database;
+using ArkProjects.Minecraft.Database.Entities;
 using ArkProjects.Minecraft.YggdrasilApi.Services.Server;
 using AutoMapper;
 
