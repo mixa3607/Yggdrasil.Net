@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34018.315
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArkProjects.Minecraft.YggdrasilApi", "ArkProjects.Minecraft.YggdrasilApi\ArkProjects.Minecraft.YggdrasilApi.csproj", "{11C718C1-D9CE-4BD0-8999-A79F1F77C1F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArkProjects.Minecraft.YggdrasilApi", "ArkProjects.Minecraft.YggdrasilApi\ArkProjects.Minecraft.YggdrasilApi.csproj", "{11C718C1-D9CE-4BD0-8999-A79F1F77C1F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArkProjects.Minecraft.AspShared", "ArkProjects.Minecraft.AspShared\ArkProjects.Minecraft.AspShared.csproj", "{FF762799-6B4F-45A6-9967-DA7F6CE74558}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArkProjects.Minecraft.AspShared", "ArkProjects.Minecraft.AspShared\ArkProjects.Minecraft.AspShared.csproj", "{FF762799-6B4F-45A6-9967-DA7F6CE74558}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArkProjects.Minecraft.Database", "ArkProjects.Minecraft.Database\ArkProjects.Minecraft.Database.csproj", "{D36B5B3F-7A38-49D6-B5B4-56622CD11087}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{FF762799-6B4F-45A6-9967-DA7F6CE74558}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF762799-6B4F-45A6-9967-DA7F6CE74558}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF762799-6B4F-45A6-9967-DA7F6CE74558}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D36B5B3F-7A38-49D6-B5B4-56622CD11087}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D36B5B3F-7A38-49D6-B5B4-56622CD11087}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D36B5B3F-7A38-49D6-B5B4-56622CD11087}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D36B5B3F-7A38-49D6-B5B4-56622CD11087}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,9 @@
 using System.Reflection;
 using System.Text.Encodings.Web;
+using ArkProjects.Minecraft.AspShared.EntityFramework;
 using ArkProjects.Minecraft.AspShared.Logging;
 using ArkProjects.Minecraft.AspShared.Validation;
+using ArkProjects.Minecraft.Database;
 using ArkProjects.Minecraft.YggdrasilApi.Misc;
 using ArkProjects.Minecraft.YggdrasilApi.Misc.JsonConverters;
 using ArkProjects.Minecraft.YggdrasilApi.Options;
@@ -123,4 +125,5 @@ app.Services
     .RbCheckLocale()
     ;
 
+await app.Services.RbEfMigrateAsync<McDbContext>();
 await app.RunAsync();

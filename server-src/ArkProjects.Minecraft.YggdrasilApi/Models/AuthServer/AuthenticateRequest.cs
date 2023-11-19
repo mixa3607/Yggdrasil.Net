@@ -8,7 +8,7 @@ public class AuthenticateRequest
     public ClientAgentModel? Agent { get; set; }
 
     [JsonProperty("username")]
-    public string UserName { get; set; } = null!;
+    public string LoginOrEmail { get; set; } = null!;
 
     [JsonProperty("password")]
     public string Password { get; set; } = null!;

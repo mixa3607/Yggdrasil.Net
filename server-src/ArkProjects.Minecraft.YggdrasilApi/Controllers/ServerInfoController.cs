@@ -1,6 +1,7 @@
 using ArkProjects.Minecraft.YggdrasilApi.Models.ServerInfo;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography.X509Certificates;
+using SdHub.Services.Tokens;
 
 namespace ArkProjects.Minecraft.YggdrasilApi.Controllers;
 
@@ -9,15 +10,19 @@ namespace ArkProjects.Minecraft.YggdrasilApi.Controllers;
 public class ServerInfoController : ControllerBase
 {
     private readonly ILogger<ServerInfoController> _logger;
+    private readonly IYgServerService _serverService;
 
-    public ServerInfoController(ILogger<ServerInfoController> logger)
+    public ServerInfoController(ILogger<ServerInfoController> logger, IYgServerService serverService)
     {
         _logger = logger;
+        _serverService = serverService;
     }
 
     [HttpGet()]
     public async Task<ServerInfoModel> GetInfo(CancellationToken ct = default)
     {
+        var info = await _serverService.GetServerInfoAsync("", ct);
+        return info;
         return new ServerInfoModel()
         {
             SkinDomains = new string[] { "littleskin.cn" },
