@@ -1,15 +1,11 @@
-using System.Buffers.Text;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.Encodings.Web;
-using ArkProjects.Minecraft.YggdrasilApi.Misc.JsonConverters;
 using ArkProjects.Minecraft.YggdrasilApi.Models.SessionServer;
+using ArkProjects.Minecraft.YggdrasilApi.Services.User;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Newtonsoft.Json;
-using SdHub.Services.Tokens;
 
 namespace ArkProjects.Minecraft.YggdrasilApi.Controllers;
 
@@ -32,23 +28,24 @@ public class SessionServerController : ControllerBase
     [HttpPost("session/minecraft/join")]
     public async Task Join([FromBody] JoinRequest req, CancellationToken ct = default)
     {
+        //ignore
         Response.StatusCode = 204;
     }
 
     [HttpPost("session/minecraft/hasJoined")]
     public async Task HasJoined([FromQuery] HasJoinedRequest req, CancellationToken ct = default)
     {
+        var user = await _userService.GetUserByLoginOrEmailAsync(req.UserName, null, ct);
         Response.StatusCode = 204;
     }
 
     [HttpGet("session/minecraft/profile/{uuid}")]
     public async Task<ProfileResponse> Profile(ProfileRequest req, CancellationToken ct = default)
     {
-        var extProfile = await _userService.GetUserExtendedProfileAsync("", req.UserId, ct);
+        var extProfile = await _userService.GetUserExtendedProfileAsync(req.UserId, ct);
         var extProfileJson = _jsonHelper.Serialize(extProfile) as HtmlString;
         var extProfileBytes = Encoding.UTF8.GetBytes(extProfileJson!.Value!);
         var extProfileB64 = Convert.ToBase64String(extProfileBytes);
-
 
         return new ProfileResponse
         {
@@ -60,20 +57,6 @@ public class SessionServerController : ControllerBase
                 new(KnownProfileProperties.Textures, extProfileB64, req.Unsigned ? null : GetSign(extProfileB64))
             }
         };
-        //SharedUser.ExtendedProfile.Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        //var jStr = JsonConvert.SerializeObject(SharedUser.ExtendedProfile, new YggdrasilGuidConverter());
-        //var b64Str = Convert.ToBase64String(Encoding.UTF8.GetBytes(jStr));
-        //
-        //return new ProfileResponse
-        //{
-        //    Id = SharedUser.ExtendedProfile.ProfileId,
-        //    Name = SharedUser.ExtendedProfile.ProfileName,
-        //    ProfileActions = new string[] { KnownProfileActions.ForcedNameChange, KnownProfileActions.UsingBannedSkin },
-        //    Properties = new ProfileResponse.PropertyModel[]
-        //    {
-        //        new(KnownProfileProperties.Textures, b64Str, req.Unsigned ? null : GetSign(b64Str))
-        //    }
-        //};
     }
 
     public static string GetSign(string text)

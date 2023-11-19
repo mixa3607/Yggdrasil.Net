@@ -1,8 +1,7 @@
-﻿using System;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
-namespace SdHub.Services.Tokens;
+namespace ArkProjects.Minecraft.YggdrasilApi.Services.UserPassword;
 
 public class UserPasswordService : IUserPasswordService
 {

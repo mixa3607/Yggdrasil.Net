@@ -1,7 +1,7 @@
 using ArkProjects.Minecraft.YggdrasilApi.Models.ServerInfo;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography.X509Certificates;
-using SdHub.Services.Tokens;
+using ArkProjects.Minecraft.YggdrasilApi.Services.Server;
 
 namespace ArkProjects.Minecraft.YggdrasilApi.Controllers;
 
@@ -21,22 +21,21 @@ public class ServerInfoController : ControllerBase
     [HttpGet()]
     public async Task<ServerInfoModel> GetInfo(CancellationToken ct = default)
     {
-        var info = await _serverService.GetServerInfoAsync("", ct);
-        return info;
+        var info = await _serverService.GetServerInfoAsync(ct);
         return new ServerInfoModel()
         {
-            SkinDomains = new string[] { "littleskin.cn" },
-            SignaturePublicKey = SharedUser.Certificate.GetRSAPrivateKey()!.ExportSubjectPublicKeyInfoPem(),
+            SkinDomains = info.SkinDomains,
+            SignaturePublicKey = info.Cert.GetRSAPrivateKey()!.ExportSubjectPublicKeyInfoPem(),
             Meta = new ServerMetadataModel()
             {
-                ImplementationName = "asp net",
-                ImplementationVersion = "1.0.0",
-                ServerName = "dev",
+                ServerName = info.ServerName,
+                ImplementationName = info.ImplementationName,
+                ImplementationVersion = info.ImplementationVersion,
                 FeatureNonEmailLogin = true,
                 Links = new ServerMetadataLinksModel()
                 {
-                    HomePage = "https://aaaa.com",
-                    Register = "https://aaaa.com",
+                    HomePage = info.HomePageUrl,
+                    Register = info.RegisterUrl,
                 }
             }
         };

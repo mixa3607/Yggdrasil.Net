@@ -1,6 +1,6 @@
 using ArkProjects.Minecraft.YggdrasilApi.Models.AuthServer;
+using ArkProjects.Minecraft.YggdrasilApi.Services.User;
 using Microsoft.AspNetCore.Mvc;
-using SdHub.Services.Tokens;
 
 namespace ArkProjects.Minecraft.YggdrasilApi.Controllers;
 
@@ -22,7 +22,7 @@ public class AuthServerController : ControllerBase
         CancellationToken ct = default)
     {
         var user = await _userService.GetUserByLoginOrEmailAsync(req.LoginOrEmail, req.Password, ct);
-        var profile = await _userService.GetUserProfileAsync("", user.Id, ct);
+        var profile = await _userService.GetUserProfileAsync( user.Id, ct);
         var clientToken = req.ClientToken ?? Guid.NewGuid().ToString("N");
         var accessToken = await _userService.CreateAccessTokenAsync(clientToken, user.Id, ct);
 
@@ -44,8 +44,8 @@ public class AuthServerController : ControllerBase
         {
             //TODO
         }
-        var user = await _userService.GetUserByAccessTokenAsync(req.AccessToken, ct);
-        var profile = await _userService.GetUserProfileAsync("", user.Id, ct);
+        var user = await _userService.GetUserByAccessTokenAsync( req.AccessToken, ct);
+        var profile = await _userService.GetUserProfileAsync( user.Id, ct);
         var accessToken = await _userService.CreateAccessTokenAsync(req.ClientToken, user.Id, ct);
         await _userService.InvalidateAccessTokenAsync(user.Id, accessToken, ct);
 

@@ -1,9 +1,10 @@
 ﻿using ArkProjects.Minecraft.AspShared.EntityFramework;
+using ArkProjects.Minecraft.Database;
 using ArkProjects.Minecraft.Database.Entities.Users;
+using ArkProjects.Minecraft.YggdrasilApi.Services.UserPassword;
 using Microsoft.EntityFrameworkCore;
-using SdHub.Services.Tokens;
 
-namespace ArkProjects.Minecraft.Database;
+namespace ArkProjects.Minecraft.YggdrasilApi.Services;
 
 public class McDbContextSeeder : IDbSeeder<McDbContext>
 {

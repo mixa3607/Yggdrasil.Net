@@ -11,7 +11,13 @@ public class McDbContext : DbContext
     //auth
     public DbSet<RefreshTokenEntity> RefreshTokens { get; set; } = null!;
     public DbSet<UserEntity> Users { get; set; } = null!;
+    public DbSet<UserAccessTokenEntity> UserAccessTokens { get; set; } = null!;
     public DbSet<TempCodeEntity> TempCodes { get; set; } = null!;
+    public DbSet<UserProfileEntity> UserProfiles { get; set; } = null!;
+
+
+    public DbSet<ServerEntity> Servers { get; set; } = null!;
+
 
 
     public McDbContext(DbContextOptions<McDbContext> options) : base(options)
