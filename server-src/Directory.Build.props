@@ -1,0 +1,44 @@
+<Project>
+	<PropertyGroup>
+		<Authors>mixa3607</Authors>
+		<Company>mixa3607</Company>
+
+		<BUILD_DATE>$([System.DateTime]::Now.ToString())</BUILD_DATE>
+		<CI_COMMIT_REF_NAME Condition="'$(CI_COMMIT_REF_NAME)' == ''">local</CI_COMMIT_REF_NAME>
+		<CI_COMMIT_SHORT_SHA Condition="'$(CI_COMMIT_SHORT_SHA)' == ''">deadbeef</CI_COMMIT_SHORT_SHA>
+		<CI_COMMIT_SHA Condition="'$(CI_COMMIT_SHA)' == ''">deadbeefdeadbeefdeadbeefdeadbeef</CI_COMMIT_SHA>
+
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
+		<NuGetAudit>false</NuGetAudit>
+	</PropertyGroup>
+
+	<!-- CI/CD build -->
+	<PropertyGroup Condition="'$(CI)' == 'true'">
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+	</PropertyGroup>
+
+	<!-- Inject build info -->
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+			<_Parameter1>BUILD_DATE</_Parameter1>
+			<_Parameter2>$(BUILD_DATE)</_Parameter2>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+			<_Parameter1>CI_COMMIT_REF_NAME</_Parameter1>
+			<_Parameter2>$(CI_COMMIT_REF_NAME)</_Parameter2>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+			<_Parameter1>CI_COMMIT_SHORT_SHA</_Parameter1>
+			<_Parameter2>$(CI_COMMIT_SHORT_SHA)</_Parameter2>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+			<_Parameter1>CI_COMMIT_SHA</_Parameter1>
+			<_Parameter2>$(CI_COMMIT_SHA)</_Parameter2>
+		</AssemblyAttribute>
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+			<_Parameter1>CI_PROJECT_URL</_Parameter1>
+			<_Parameter2>$(CI_PROJECT_URL)</_Parameter2>
+		</AssemblyAttribute>
+	</ItemGroup>
+</Project>

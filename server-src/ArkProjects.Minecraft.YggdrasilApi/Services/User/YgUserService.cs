@@ -1,133 +1,95 @@
 ﻿using ArkProjects.Minecraft.Database;
 using ArkProjects.Minecraft.Database.Entities.Users;
-using ArkProjects.Minecraft.YggdrasilApi.Models.AuthServer;
-using ArkProjects.Minecraft.YggdrasilApi.Models.SessionServer;
-using ArkProjects.Minecraft.YggdrasilApi.Services.Server;
-using ArkProjects.Minecraft.YggdrasilApi.Services.UserPassword;
+using ArkProjects.Minecraft.Database.Entities.Yg;
 using Microsoft.EntityFrameworkCore;
 
 namespace ArkProjects.Minecraft.YggdrasilApi.Services.User;
 
 public class YgUserService : IYgUserService
 {
-    private readonly IUserPasswordService _passwordService;
-    private readonly string _serverName;
     private readonly McDbContext _db;
 
-    public YgUserService(IUserPasswordService passwordService, IServerNameProvider serverNameProvider, McDbContext db)
+    public YgUserService(McDbContext db)
     {
-        _passwordService = passwordService;
-        _serverName = serverNameProvider.GetServerName();
         _db = db;
     }
 
-    public async Task<UserModel> GetUserByLoginOrEmailAsync(string loginOrEmail, string? password,
+    public async Task<UserEntity?> GetUserByLoginOrEmailAsync(string loginOrEmail, string domain,
         CancellationToken ct = default)
     {
-        var n = loginOrEmail.ToUpper().Normalize();
-        var passHash = password == null ? null : _passwordService.CreatePasswordHash(password);
+        var n = loginOrEmail.Normalize().ToUpper();
         var user = await _db.Users
-            .Where(x =>
-                (x.EmailNormalized == n || x.LoginNormalized == n) &&
-                (passHash == null || x.PasswordHash == passHash) &&
-                x.DeletedAt == null
-            )
+            .AsNoTracking()
+            .Where(x => (x.EmailNormalized == n || x.LoginNormalized == n) && x.DeletedAt == null)
             .FirstOrDefaultAsync(ct);
-
-        return new UserModel()
-        {
-            Id = user.Guid,
-            UserName = user.Login,
-            Properties = Array.Empty<UserPropertyModel>()
-        };
+        return user;
     }
 
-    public async Task<UserModel> GetUserByAccessTokenAsync(string accessToken, CancellationToken ct = default)
+    public async Task<UserEntity?> GetUserByAccessTokenAsync(string accessToken, string domain,
+        CancellationToken ct = default)
     {
-        var now = DateTimeOffset.UtcNow;
         var user = await _db.UserAccessTokens
-            .Where(x => x.ExpiredAt > now &&
-                        x.AccessToken == accessToken &&
-                        x.Server!.Name == _serverName &&
-                        x.User!.DeletedAt == null)
+            .AsNoTracking()
+            .Where(x =>
+                x.AccessToken == accessToken &&
+                x.Server!.YgDomain == domain &&
+                x.User!.DeletedAt == null)
             .Select(x => x.User)
             .FirstOrDefaultAsync(ct);
-
-        return new UserModel()
-        {
-            Id = user.Guid,
-            UserName = user.Login,
-            Properties = Array.Empty<UserPropertyModel>()
-        };
+        return user;
     }
 
-    public async Task<UserProfileModel> GetUserProfileAsync(Guid userGuid, CancellationToken ct = default)
+    public Task<UserProfileEntity?> GetUserProfileByGuidAsync(Guid profileGuid, string domain, CancellationToken ct = default)
     {
-        var profile = await _db.UserProfiles
-            .Where(x => x.Server!.Name == _serverName &&
-                        x.User!.DeletedAt == null &&
-                        x.User.Guid == userGuid)
-            .FirstOrDefaultAsync(ct);
-        return new UserProfileModel()
-        {
-            Id = profile.Guid,
-            Name = profile.Name
-        };
+        return GetUserExtendedProfileAsync(profileGuid, null, domain, ct);
     }
 
-    public async Task<UserExtendedProfileModel> GetUserExtendedProfileAsync(Guid userGuid,
+    private async Task<UserProfileEntity?> GetUserExtendedProfileAsync(Guid? profileGuid, string? profileName,
+        string domain,
         CancellationToken ct = default)
     {
-        var profile = await _db.UserProfiles
-            .Where(x => x.Server!.Name == _serverName &&
-                        x.User!.DeletedAt == null &&
-                        x.User.Guid == userGuid)
-            .FirstOrDefaultAsync(ct);
-
-        var textures = new Dictionary<string, ProfileTextureModel>();
-        if (profile.CapeFileUrl != null)
+        var query = _db.UserProfiles
+            .AsNoTracking()
+            .Where(x =>
+                x.Server!.YgDomain == domain &&
+                x.User!.DeletedAt == null);
+        if (profileGuid != null)
         {
-            textures[ProfileTextureModel.CapeTextureName] = new ProfileTextureModel()
-            {
-                Url = profile.CapeFileUrl,
-                Metadata = new Dictionary<string, string>(0)
-            };
+            query = query.Where(x => x.Guid == profileGuid.Value);
+        }
+        else if (!string.IsNullOrWhiteSpace(profileName))
+        {
+            query = query.Where(x => x.Name == profileName);
+        }
+        else
+        {
+            throw new ArgumentNullException("", "guid or name must be not null");
         }
 
-        if (profile.SkinFileUrl != null)
-        {
-            textures[ProfileTextureModel.SkinTextureName] = new ProfileTextureModel()
-            {
-                Url = profile.SkinFileUrl,
-                Metadata = new Dictionary<string, string>(0)
-            };
-        }
-
-        return new UserExtendedProfileModel()
-        {
-            ProfileId = profile.Guid,
-            ProfileName = profile.Name,
-            Textures = textures,
-            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-        };
+        return await query.FirstOrDefaultAsync(ct);
     }
 
-    public async Task<string> CreateAccessTokenAsync(string clientToken, Guid userGuid, CancellationToken ct = default)
+    public async Task<string> CreateAccessTokenAsync(string clientToken, Guid userGuid, string domain,
+        CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;
         var user = await _db.Users
             .Where(x => x.DeletedAt == null && x.Guid == userGuid)
-            .FirstOrDefaultAsync(ct);
+            .FirstAsync(ct);
         var server = await _db.Servers
-            .Where(x => x.DeletedAt == null && x.Name == _serverName)
-            .FirstOrDefaultAsync(ct);
+            .Where(x => x.DeletedAt == null && x.YgDomain == domain)
+            .FirstAsync(ct);
+
+        var exp = TimeSpan.FromDays(2);
+        var refr = TimeSpan.FromDays(28);
         var entity = new UserAccessTokenEntity()
         {
             Server = server,
             User = user,
             AccessToken = Guid.NewGuid().ToString(),
             ClientToken = clientToken,
-            ExpiredAt = now.AddMonths(1),
+            ExpiredAt = now + exp,
+            MustBeRefreshedAt = now + refr,
             CreatedAt = now,
         };
         _db.UserAccessTokens.Add(entity);
@@ -135,7 +97,7 @@ public class YgUserService : IYgUserService
         return entity.AccessToken;
     }
 
-    public async Task<bool> ValidateAccessTokenAsync(string? clientToken, string accessToken,
+    public async Task<bool> ValidateAccessTokenAsync(string? clientToken, string accessToken, string domain,
         CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -145,12 +107,27 @@ public class YgUserService : IYgUserService
                 x.User!.DeletedAt == null &&
                 x.AccessToken == accessToken &&
                 x.ExpiredAt > now &&
-                x.Server!.Name == _serverName)
+                x.Server!.YgDomain == domain)
             .AnyAsync(ct);
         return isValid;
     }
 
-    public async Task InvalidateAccessTokenAsync(Guid userGuid, string accessToken,
+    public async Task<bool> CanRefreshAccessTokenAsync(string? clientToken, string accessToken, string domain,
+        CancellationToken ct = default)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var isValid = await _db.UserAccessTokens
+            .Where(x =>
+                (x.ClientToken == clientToken || clientToken == null) &&
+                x.User!.DeletedAt == null &&
+                x.AccessToken == accessToken &&
+                x.MustBeRefreshedAt > now &&
+                x.Server!.YgDomain == domain)
+            .AnyAsync(ct);
+        return isValid;
+    }
+
+    public async Task InvalidateAccessTokenAsync(Guid userGuid, string accessToken, string domain,
         CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;
@@ -160,13 +137,14 @@ public class YgUserService : IYgUserService
                 x.User!.DeletedAt == null &&
                 x.AccessToken == accessToken &&
                 x.ExpiredAt > now &&
-                x.Server!.Name == _serverName)
-            .FirstOrDefaultAsync(ct);
+                x.Server!.YgDomain == domain)
+            .FirstAsync(ct);
         tokenEntity.ExpiredAt = now;
+        tokenEntity.MustBeRefreshedAt = now;
         await _db.SaveChangesAsync(CancellationToken.None);
     }
 
-    public async Task InvalidateAllAccessTokensAsync(Guid userGuid, CancellationToken ct = default)
+    public async Task InvalidateAllAccessTokensAsync(Guid userGuid, string domain, CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;
         var tokenEntities = await _db.UserAccessTokens
@@ -174,11 +152,12 @@ public class YgUserService : IYgUserService
                 x.User!.Guid == userGuid &&
                 x.User!.DeletedAt == null &&
                 x.ExpiredAt > now &&
-                x.Server!.Name == _serverName)
+                x.Server!.YgDomain == domain)
             .ToArrayAsync(ct);
         foreach (var tokenEntity in tokenEntities)
         {
             tokenEntity.ExpiredAt = now;
+            tokenEntity.MustBeRefreshedAt = now;
         }
 
         await _db.SaveChangesAsync(CancellationToken.None);

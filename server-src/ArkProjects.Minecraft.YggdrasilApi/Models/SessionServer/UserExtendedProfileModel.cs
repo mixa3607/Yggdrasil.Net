@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using ArkProjects.Minecraft.Database.Entities.Users;
+using ArkProjects.Minecraft.Database.Entities.Yg;
+using Newtonsoft.Json;
 
 namespace ArkProjects.Minecraft.YggdrasilApi.Models.SessionServer;
 
@@ -15,4 +17,34 @@ public class UserExtendedProfileModel
 
     [JsonProperty("textures")]
     public required IReadOnlyDictionary<string, ProfileTextureModel> Textures { get; set; }
+
+    public static UserExtendedProfileModel Map(UserProfileEntity profile)
+    {
+        var textures = new Dictionary<string, ProfileTextureModel>();
+        if (profile.CapeFileUrl != null)
+        {
+            textures[ProfileTextureModel.CapeTextureName] = new ProfileTextureModel()
+            {
+                Url = profile.CapeFileUrl,
+                Metadata = new Dictionary<string, string>(0)
+            };
+        }
+
+        if (profile.SkinFileUrl != null)
+        {
+            textures[ProfileTextureModel.SkinTextureName] = new ProfileTextureModel()
+            {
+                Url = profile.SkinFileUrl,
+                Metadata = new Dictionary<string, string>(0)
+            };
+        }
+
+        return new UserExtendedProfileModel()
+        {
+            ProfileId = profile.Guid,
+            ProfileName = profile.Name,
+            Textures = textures,
+            Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        };
+    }
 }

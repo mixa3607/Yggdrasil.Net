@@ -12,7 +12,7 @@ public class YggdrasilGuidConverter : JsonConverter<Guid>
     public override Guid ReadJson(JsonReader reader, Type objectType, Guid existingValue, bool hasExistingValue,
         JsonSerializer serializer)
     {
-        var str = reader.ReadAsString();
+        var str = reader.Value?.ToString();
         return str == null ? existingValue : Guid.Parse(str);
     }
 }

@@ -7,10 +7,16 @@ using ArkProjects.Minecraft.Database;
 using ArkProjects.Minecraft.YggdrasilApi.Misc;
 using ArkProjects.Minecraft.YggdrasilApi.Misc.JsonConverters;
 using ArkProjects.Minecraft.YggdrasilApi.Options;
+using ArkProjects.Minecraft.YggdrasilApi.Services;
+using ArkProjects.Minecraft.YggdrasilApi.Services.Server;
+using ArkProjects.Minecraft.YggdrasilApi.Services.User;
+using ArkProjects.Minecraft.YggdrasilApi.Services.UserPassword;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Serialization;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,11 +28,28 @@ Console.WriteLine($"ContentRoot: {builder.Environment.ContentRootPath}");
 builder.Services.ConfigureRbSerilog(builder.Configuration.GetSection("Serilog"));
 builder.Host.AddRbSerilog();
 
+builder.Services
+    .AddSingleton<IUserPasswordService, UserPasswordService>()
+    .AddScoped<IYgServerService, YgServerService>()
+    .AddScoped<IYgUserService, YgUserService>();
+
 //security
 var securityOptions = builder.Configuration.GetSection("WebSecurity").Get<WebSecurityOptions>()!;
 builder.Services
     .Configure<WebSecurityOptions>(builder.Configuration.GetSection("WebSecurity"))
     ;
+
+var dbOptions = builder.Configuration.GetSection("Database:ConnectionString").Value!;
+var dbSourceBuilder = new NpgsqlDataSourceBuilder(dbOptions);
+var dbSource = dbSourceBuilder.Build();
+builder.Services
+    .AddSingleton<IDbSeeder<McDbContext>, McDbContextSeeder>()
+    .AddRbDbMigrator<McDbContext>()
+    .AddDbContext<McDbContext>(x =>
+        x.UseNpgsql(dbSource, y => y
+            .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
+        )
+    );
 
 //controllers
 builder.Services
@@ -82,10 +105,12 @@ app.Use(async (context, next) =>
     }
     catch (Exception e)
     {
-        var err = ErrorResponseFactory.Custom(
-            StatusCodes.Status500InternalServerError,
-            ErrorResponseFactory.ErrorInternalServerError,
-            e.ToString());
+        var err = e is YgServerException ygE
+            ? ygE.Response
+            : ErrorResponseFactory.Custom(
+                StatusCodes.Status500InternalServerError,
+                ErrorResponseFactory.ErrorInternalServerError,
+                e.ToString());
         var jsonHelper = context.RequestServices.GetRequiredService<IJsonHelper>();
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = err.StatusCode;

@@ -1,11 +1,11 @@
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build_server
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build_server
 COPY ./server-src/ .
 ARG COMMIT_SHA=none
 ARG COMMIT_REF_NAME=none
 RUN dotnet restore && dotnet build -c Release --no-restore
 RUN dotnet publish -c Release --no-build -o /yggdrasil ArkProjects.Minecraft.YggdrasilApi
 
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS app
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS app
 WORKDIR /app
 ARG COMMIT_SHA=none
 ARG COMMIT_REF_NAME=none

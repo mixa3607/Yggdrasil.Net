@@ -1,31 +1,32 @@
-﻿using ArkProjects.Minecraft.YggdrasilApi.Models.AuthServer;
-using ArkProjects.Minecraft.YggdrasilApi.Models.SessionServer;
+﻿using ArkProjects.Minecraft.Database.Entities.Users;
+using ArkProjects.Minecraft.Database.Entities.Yg;
+using ArkProjects.Minecraft.YggdrasilApi.Models.AuthServer;
 
 namespace ArkProjects.Minecraft.YggdrasilApi.Services.User;
 
 public interface IYgUserService
 {
-    Task<UserModel> GetUserByLoginOrEmailAsync(string loginOrEmail, string? password,
+    Task<UserEntity?> GetUserByLoginOrEmailAsync(string loginOrEmail, string domain,
         CancellationToken ct = default);
 
-    Task<UserModel> GetUserByAccessTokenAsync(string accessToken,
+    Task<UserEntity?> GetUserByAccessTokenAsync(string accessToken, string domain,
         CancellationToken ct = default);
 
-    Task<UserProfileModel> GetUserProfileAsync(Guid userGuid,
+    Task<UserProfileEntity?> GetUserProfileByGuidAsync(Guid profileGuid, string domain,
         CancellationToken ct = default);
 
-    Task<UserExtendedProfileModel> GetUserExtendedProfileAsync(Guid userGuid,
+    Task<string> CreateAccessTokenAsync(string clientToken, Guid userGuid, string domain,
         CancellationToken ct = default);
 
-    Task<string> CreateAccessTokenAsync(string clientToken, Guid userGuid,
+    Task<bool> ValidateAccessTokenAsync(string? clientToken, string accessToken, string domain,
         CancellationToken ct = default);
 
-    Task<bool> ValidateAccessTokenAsync(string? clientToken, string accessToken,
+    Task<bool> CanRefreshAccessTokenAsync(string? clientToken, string accessToken, string domain,
         CancellationToken ct = default);
 
-    Task InvalidateAccessTokenAsync(Guid userGuid, string accessToken,
+    Task InvalidateAccessTokenAsync(Guid userGuid, string accessToken, string domain,
         CancellationToken ct = default);
 
-    Task InvalidateAllAccessTokensAsync(Guid userGuid,
+    Task InvalidateAllAccessTokensAsync(Guid userGuid, string domain,
         CancellationToken ct = default);
 }

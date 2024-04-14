@@ -1,4 +1,6 @@
-﻿namespace ArkProjects.Minecraft.Database.Entities.Users;
+﻿using ArkProjects.Minecraft.Database.Entities.Users;
+
+namespace ArkProjects.Minecraft.Database.Entities.Yg;
 
 public class UserProfileEntity
 {

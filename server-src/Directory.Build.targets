@@ -1,0 +1,19 @@
+<Project>
+	<!-- ASP.NET Core web server -->
+	<PropertyGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(OutputType)' == 'Exe'">
+		<ServerGarbageCollection>false</ServerGarbageCollection>
+	</PropertyGroup>
+
+	<!-- Log build info -->
+	<PropertyGroup>
+		<DEBUG_MSG>
+Is sdk web: $(UsingMicrosoftNETSdkWeb)
+Is sdk: $(UsingMicrosoftNETSdk)
+OutputType: $(OutputType)
+BUILD_DATE: $(BUILD_DATE)
+		</DEBUG_MSG>
+	</PropertyGroup>
+	<Target Name="TestMessage" AfterTargets="Build">
+		<Message Text="$(DEBUG_MSG)" Importance="high" />
+	</Target>
+</Project>
